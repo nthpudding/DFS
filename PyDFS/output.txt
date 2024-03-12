@@ -1,0 +1,6 @@
+
+Expanded Nodes: ['A', 'D', 'F', 'K']
+Adjacency List: {'A': ['B', 'C', 'D'], 'D': ['C', 'F'], 'F': ['C', 'K'], 'K': ['']}
+List L: [['A'], ['B', 'C', 'D'], ['B', 'C', 'C', 'F'], ['B', 'C', 'C', 'C', 'K']]
+Path: ['A', 'C', 'E', 'K']
+
