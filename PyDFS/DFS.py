@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import os
 import ast
 
-# DFS
 def dfs(graph, start_node, end_node):
     stack = [start_node]
     visited = set()
@@ -25,7 +24,6 @@ def dfs(graph, start_node, end_node):
 
     return order, stack_list
 
-#Tách hàm in kết quả ra từ trong hàm visualize
 def print_result(order, stack_list, G):
     adjacency_list = {}
 
@@ -35,30 +33,19 @@ def print_result(order, stack_list, G):
         else:
             adjacency_list[node] = [n for n in G.neighbors(node) if n not in order[:i]]
 
-    #print to screen
     print("\nExpanded Nodes: ", order)
     print("Adjacency List:", adjacency_list)
     print("List L:", stack_list)
 
-    #path
     shortest_path = nx.shortest_path(G, source=order[0], target=order[-1])
     print("Path:", shortest_path, end = "\n\n")
 
-    #print to file
     with open('output.txt', 'w') as f:
         f.write("\nExpanded Nodes: " + str(order) + "\n")
         f.write("Adjacency List: " + str(adjacency_list) + "\n")
         f.write("List L: " + str(stack_list) + "\n")
         f.write("Path: " + str(shortest_path) + "\n\n")
 
-def perform_dfs(file_path):
-    start_node, end_node, dfs_data = read_file(file_path)
-    G = nx.Graph()
-    G.add_edges_from(dfs_data)
-    order, stack_list = dfs(G, start_node, end_node)
-    return order, 'DFS', G, nx.spring_layout(G), stack_list, start_node, end_node
-
-# Draw Graph
 def visualize(order, title, G, pos,start_node,end_node):
 
     plt.figure()
@@ -76,13 +63,22 @@ def visualize(order, title, G, pos,start_node,end_node):
     time.sleep(0.5)
     plt.show()
 
-# Read input file
+def perform_dfs(file_path):
+    start_node, end_node, dfs_data = read_file(file_path)
+    G = nx.Graph()
+    G.add_edges_from(dfs_data)
+    order, stack_list = dfs(G, start_node, end_node)
+    return order, 'DFS', G, nx.spring_layout(G), stack_list, start_node, end_node
+
 def read_file(file_path):
     with open(file_path, 'r') as file:
         data = file.readlines()
     start_node = data[0].strip()
     end_node = data[1].strip()
     dfs_data = ast.literal_eval(data[2].strip())
+
+    if len(start_node) != 1 or len(end_node) != 1:
+        raise ValueError("The first and second rows of the input file should contain only one character.")
 
     return start_node, end_node, dfs_data
 
