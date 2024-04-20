@@ -1,6 +1,9 @@
-
-Expanded Nodes: ['A', 'D', 'F', 'K', 'E', 'G']
-Adjacency List: {'A': ['B', 'C', 'D'], 'D': ['C', 'F'], 'F': ['C', 'K'], 'K': ['E'], 'E': ['C', 'G'], 'G': ['']}
-List L: [['A'], ['B', 'C', 'D'], ['B', 'C', 'C', 'F'], ['B', 'C', 'C', 'C', 'K'], ['B', 'C', 'C', 'C', 'E'], ['B', 'C', 'C', 'C', 'C', 'G']]
-Path: ['A', 'B', 'G']
-
+Node             Adj List                       Open                           Path                           Close               
+A               B, C, D                        B, C, D                        A                              A                   
+D               C, F                           B, C, F                        A, D                           A, D                
+F               K                              B, C, K                        A, D, F                        A, D, F             
+K                                              B, C                           A, D, F, K                     A, D, F, K          
+C               E, F                           B, E                           A, D, C                        A, D, F, K, C       
+E               G, K                           B, G                           A, D, C, E                     A, D, F, K, C, E    
+G                                              B                              A, D, C, E, G                  A, D, F, K, C, E, G 
+Path from A to G: A, D, C, E, G

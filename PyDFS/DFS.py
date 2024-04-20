@@ -1,89 +1,65 @@
-import time
-import networkx as nx
-import matplotlib.pyplot as plt
-import os
-import ast
-
-def dfs(graph, start_node, end_node):
-    stack = [start_node]
-    visited = set()
-    order = []
-    stack_list = []
-
-    while stack:
-        stack_list.append(stack.copy())
-        node = stack.pop()
-        if node not in visited:
-            visited.add(node)
-            order.append(node)
-
-            if node == end_node:
-                break
-
-            stack.extend(n for n in graph[node] if n not in visited)
-
-    return order, stack_list
-
-def print_result(order, stack_list, G):
-    adjacency_list = {}
-
-    for i, node in enumerate(order, start=1):
-        if i == len(order):
-            adjacency_list[node] = ['']
-        else:
-            adjacency_list[node] = [n for n in G.neighbors(node) if n not in order[:i]]
-
-    print("\nExpanded Nodes: ", order)
-    print("Adjacency List:", adjacency_list)
-    print("List L:", stack_list)
-
-    shortest_path = nx.shortest_path(G, source=order[0], target=order[-1])
-    print("Path:", shortest_path, end = "\n\n")
-
-    with open('output.txt', 'w') as f:
-        f.write("\nExpanded Nodes: " + str(order) + "\n")
-        f.write("Adjacency List: " + str(adjacency_list) + "\n")
-        f.write("List L: " + str(stack_list) + "\n")
-        f.write("Path: " + str(shortest_path) + "\n\n")
-
-def visualize(order, title, G, pos,start_node,end_node):
-
-    plt.figure()
-
-    for i, node in enumerate(order, start=1):
-
-        pos = nx.planar_layout(G)
-        pos[start_node] = (0, 1)
-        pos[end_node] = (0, -0.5)
-        plt.clf()
-        plt.title(title)
-        nx.draw(G, pos, with_labels=True, node_color=['red' if n == node else 'grey' for n in G.nodes()])
-        plt.draw()
-        plt.pause(0.5)
-    time.sleep(0.5)
-    plt.show()
-
-def perform_dfs(file_path):
-    start_node, end_node, dfs_data = read_file(file_path)
-    G = nx.Graph()
-    G.add_edges_from(dfs_data)
-    order, stack_list = dfs(G, start_node, end_node)
-    return order, 'DFS', G, nx.spring_layout(G), stack_list, start_node, end_node
-
-def read_file(file_path):
+def read_graph_from_file(file_path):
+    graph = {}
+    start_node = None
+    end_node = None
     with open(file_path, 'r') as file:
-        data = file.readlines()
-    start_node = data[0].strip()
-    end_node = data[1].strip()
-    dfs_data = ast.literal_eval(data[2].strip())
+        lines = file.readlines()
+        start_node = lines[0].strip()
+        end_node = lines[1].strip()
+        if len(start_node) > 1 or len(end_node) > 1:
+            raise ValueError("Start node and end node should only contain one character.")
+        for line in lines[2:]:
+            parts = line.strip().split(':')
+            node = parts[0].strip()
+            if len(parts) > 1:
+                neighbors = parts[1].strip().split()
+                graph[node] = neighbors
+            else:
+                graph[node] = []
+    return start_node, end_node, graph
 
-    if len(start_node) != 1 or len(end_node) != 1:
-        raise ValueError("The first and second rows of the input file should contain only one character.")
 
-    return start_node, end_node, dfs_data
+def dfs(graph, start, goal, output_file_path):
+    stack = [(start, [])]
+    visited = set()
 
-def main(file_path):
-    order, title, G, pos, start_node, end_node = perform_dfs(file_path)
-    visualize(order, title, G, pos,start_node,end_node)
-if __name__ == "__main__":
-    main("input.txt")
+    with open(output_file_path, 'w') as output_file:
+
+        output_file.write(f"{'Node':<15}  {'Adj List':<30} {'Open':<30} {'Path':<30} {'Close':<20}\n")
+
+        open_nodes = [start]
+        close_nodes = []
+
+        while stack:
+            node, path = stack.pop()
+
+            if node not in visited:
+                visited.add(node)
+                path = path + [node]
+
+                if node in open_nodes:
+                    open_nodes.remove(node)
+                close_nodes.append(node)
+
+                if node == goal:
+                    output_file.write(
+                        f"{node:<15} {', '.join(graph.get(node, [''])):<30} {', '.join(open_nodes):<30} {', '.join(path):<30} {', '.join(close_nodes):<20}\n")
+                    output_file.write(f"Path from {start} to {goal}: {', '.join(path)}\n")
+                    break
+
+                children = graph.get(node, [])
+                next_open_nodes = [child for child in children if child not in visited and child not in open_nodes]
+                open_nodes = open_nodes + next_open_nodes
+
+                output_file.write(
+                    f"{node:<15} {', '.join(graph.get(node, [''])):<30} {', '.join(open_nodes):<30} {', '.join(path):<30} {', '.join(close_nodes):<20}\n")
+
+                stack.extend([(child, path) for child in children if child not in visited])
+
+
+input_file_path = 'input.txt'
+start_node, end_node, graph = read_graph_from_file(input_file_path)
+
+output_file_path = 'output.txt'
+
+dfs(graph, start_node, end_node, output_file_path)
